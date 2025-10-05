@@ -13,7 +13,7 @@ import (
 
 var (
 	listenAddr           = flag.String("addr", ":8080", "Address to listen on for HTTP requests")
-	hostPath             = flag.String("host-path", "/host", "Path where host filesystem is mounted")
+	cgroupPath           = flag.String("cgroup-path", "/sys/fs/cgroup", "Path where cgroup v2 filesystem is mounted")
 	interval             = flag.Duration("scrape-interval", 1*time.Second, "Scrape interval for metrics")
 	dockerSocketPath     = flag.String("docker-sock", "/var/run/docker.sock", "Path to Docker socket")
 	containerdSocketPath = flag.String("containerd-sock", "/run/containerd/containerd.sock", "Path to containerd socket")
@@ -67,7 +67,7 @@ func getCgroupList() ([]Sandbox, error) {
 
 // updateMetrics updates all metrics for a single sandbox/container.
 func updateMetrics(c Sandbox) {
-	cgroup, err := FindCgroup(*hostPath, c.ID)
+	cgroup, err := FindCgroup(*cgroupPath, c.ID)
 	if err != nil {
 		slog.Warn("Failed to find cgroup", "container", c.Container, "error", err)
 		return
@@ -126,9 +126,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Does the host path exist?
-	if _, err := os.Stat(*hostPath); os.IsNotExist(err) {
-		slog.Error("Host path does not exist", "path", *hostPath)
+	// Does the cgroup path exist?
+	if _, err := os.Stat(*cgroupPath); os.IsNotExist(err) {
+		slog.Error("Cgroup path does not exist", "path", *cgroupPath)
 		os.Exit(1)
 	}
 
@@ -150,7 +150,7 @@ func main() {
 
 	slog.SetLogLoggerLevel(parseLogLevel(logLevel))
 
-	slog.Info("Starting cgroup-container-exporter", "mode", *mode, "hostPath", *hostPath, "listenAddr", *listenAddr, "scrapeInterval", *interval)
+	slog.Info("Starting cgroup-container-exporter", "mode", *mode, "cgroupPath", *cgroupPath, "listenAddr", *listenAddr, "scrapeInterval", *interval)
 
 	go pollMetrics()
 

@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-const cgroupv2RootPath = "/sys/fs/cgroup"
-
 type CGroup struct {
 	path string
 }
@@ -19,11 +17,11 @@ type CGroup struct {
 // FindCgroup searches cgroupv2 directories recursively under the given host root path
 // for a directory name that contains the specified container ID and ends with ".scope".
 //
-// hostRootPath: The root path of the host filesystem where cgroupv2 is mounted.
+// cgroupv2RootPath: The path of the cgroup v2 filesystem.
 // id: The ID to search for in the cgroup directory names.
-func FindCgroup(hostRootPath, id string) (*CGroup, error) {
-	searchPath := filepath.Join(hostRootPath, cgroupv2RootPath)
-	slog.Debug("Searching for cgroup path", "id", id, "searchPath", searchPath)
+func FindCgroup(cgroupv2RootPath, id string) (*CGroup, error) {
+	searchPath := cgroupv2RootPath
+	slog.Debug("Searching for cgroup sandbox", "id", id, "searchPath", searchPath)
 
 	// Recursively search for the cgroup path matching the container ID.
 	var directories []string

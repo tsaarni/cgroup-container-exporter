@@ -11,7 +11,7 @@ For details on the exported cgroup v2 metrics, refer to [metrics.go](./metrics.g
 | Argument           | Default                           | Description                                  |
 | ------------------ | --------------------------------- | -------------------------------------------- |
 | `-addr`            | `:8080`                           | Address to listen on for HTTP requests       |
-| `-host-path`       | `/host`                           | Path where host filesystem is mounted        |
+| `-cgroup-path`     | `/sys/fs/cgroup`                  | Path to cgroupv2 filesystem                  |
 | `-scrape-interval` | `1s`                              | Scrape interval for metrics                  |
 | `-docker-sock`     | `/var/run/docker.sock`            | Path to Docker socket                        |
 | `-containerd-sock` | `/run/containerd/containerd.sock` | Path to containerd socket                    |
@@ -43,8 +43,8 @@ spec:
           command:
             - /cgroup-container-exporter
           args:
-            - "-host-path=/host"
-            - "-mode=kubernetes"
+            - --cgroup-path=/host/sys/fs/cgroup
+            - --mode=kubernetes
           ports:
             - containerPort: 8080
           volumeMounts:
@@ -67,12 +67,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-    name: cgroup-container-exporter
+  name: cgroup-container-exporter
 spec:
-    ports:
-        - port: 8080
-    selector:
-        app: cgroup-container-exporter
+  ports:
+    - port: 8080
+  selector:
+    app: cgroup-container-exporter
 ```
 
 ### Docker Compose
@@ -83,7 +83,7 @@ services:
     image: ghcr.io/tsaarni/cgroup-container-exporter:latest
     entrypoint:
       - /cgroup-container-exporter
-      - --host-path=/host
+      - --cgroup-path=/host/sys/fs/cgroup
       - --mode=docker
     volumes:
       - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
